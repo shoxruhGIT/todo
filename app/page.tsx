@@ -24,7 +24,7 @@ export default function Home() {
     if (typeof window !== "undefined") {
       const savedTodo = localStorage.getItem("todo");
       if (savedTodo) {
-        return JSON.parse(savedTodo).map((todo: any) => ({
+        return JSON.parse(savedTodo).map((todo: Todo) => ({
           ...todo,
           date: new Date(todo.date),
         }));
