@@ -1,103 +1,248 @@
-import Image from "next/image";
+"use client";
+
+import {
+  Moon,
+  Sun,
+  Pencil,
+  Trash2,
+  Check,
+  X,
+  CheckCircle,
+  Circle,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  interface Todo {
+    id: number;
+    text: string;
+    date: Date;
+    completed: boolean;
+  }
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const [todo, setTodo] = useState<Todo[]>(() => {
+    if (typeof window !== "undefined") {
+      const savedTodo = localStorage.getItem("todo");
+      if (savedTodo) {
+        return JSON.parse(savedTodo).map((todo: any) => ({
+          ...todo,
+          date: new Date(todo.date),
+        }));
+      }
+    }
+    return [];
+  });
+  const [newTodo, setNewTodo] = useState("");
+  const [todoId, setTodoId] = useState(1);
+  const [isDarkTheme, setIsDarkTheme] = useState(true);
+
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+  const [editText, setEditText] = useState("");
+
+  useEffect(() => {
+    localStorage.setItem("todo", JSON.stringify(todo));
+  }, [todo]);
+
+  const addTodo = () => {
+    if (newTodo.trim()) {
+      const newTodoItem: Todo = {
+        id: todoId,
+        text: newTodo,
+        date: new Date(),
+        completed: false,
+      };
+      setTodo([...todo, newTodoItem]);
+      setNewTodo("");
+      setTodoId(todoId + 1);
+    }
+  };
+
+  const deleteTodo = (id: number) => {
+    setTodo(todo.filter((item) => item.id !== id));
+  };
+
+  const startEditing = (task: Todo) => {
+    setEditingTaskId(task.id);
+    setEditText(task.text);
+  };
+
+  const saveEdit = () => {
+    if (editingTaskId !== null && editText.trim()) {
+      setTodo(
+        todo.map((task) =>
+          task.id === editingTaskId ? { ...task, text: editText } : task
+        )
+      );
+      setEditingTaskId(null);
+    }
+  };
+
+  const toggleTodo = (id: number) => {
+    setTodo(
+      todo.map((item) =>
+        item.id === id ? { ...item, completed: !item.completed } : item
+      )
+    );
+  };
+
+  const cancelEdit = () => {
+    setEditingTaskId(null);
+  };
+  return (
+    <div
+      className={`min-h-screen flex items-center justify-center p-4 ${
+        isDarkTheme ? "bg-slate-900" : "bg-white"
+      }`}
+    >
+      <div className="w-full max-w-[500px] m-auto border rounded-sm mt-20 min-h-[300px] p-4 flex flex-col shadow-xl gap-2">
+        <div className="flex items-center justify-between">
+          <h1
+            className={`text-2xl font-semibold text-center ${
+              isDarkTheme ? "text-white" : "text-black"
+            }`}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            TodoList
+          </h1>
+          <button
+            onClick={() => setIsDarkTheme(!isDarkTheme)}
+            className="cursor-pointer p-1 rounded-[50%] text-xs bg-gray-600"
           >
-            Read our docs
-          </a>
+            {isDarkTheme ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+        <div className="flex items-center gap-2">
+          <input
+            name="title"
+            type="text"
+            value={newTodo}
+            onChange={(e) => setNewTodo(e.target.value)}
+            placeholder="Enter task"
+            className={`p-2 outline-none rounded-sm w-full ${
+              isDarkTheme ? "bg-white text-black" : "bg-gray-300 text-black"
+            }`}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          <button
+            onClick={addTodo}
+            className="bg-green-500 p-2 w-[150px] rounded-sm"
+          >
+            Add
+          </button>
+        </div>
+        <div
+          className={`border min-h-[300px] rounded-sm p-2 flex flex-col gap-2  ${
+            isDarkTheme ? "" : "text-black"
+          }`}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          {/* Todo list */}
+
+          {todo.length < 0 ? (
+            <h1>No Todo</h1>
+          ) : (
+            todo.map((item) => (
+              <div
+                key={item?.id}
+                className={`w-full min-h-[40px] rounded-sm flex justify-between items-center px-2 py-1 ${
+                  isDarkTheme ? "bg-white text-black" : "bg-gray-300"
+                } `}
+              >
+                {editingTaskId === item?.id ? (
+                  <div className="flex items-center gap-40">
+                    <input
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      className={`p-2 outline-none rounded-sm w-full ${
+                        isDarkTheme
+                          ? "bg-gray-300 text-black border-slate-600"
+                          : "bg-white text-black"
+                      }`}
+                      autoFocus
+                    />
+                    <div className="flex space-x-1">
+                      <button
+                        onClick={saveEdit}
+                        className={`h-8 w-8 ${
+                          isDarkTheme
+                            ? "text-green-400 hover:text-green-300"
+                            : "text-green-600 hover:text-green-500"
+                        }`}
+                      >
+                        <Check className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={cancelEdit}
+                        className={`h-8 w-8 ${
+                          isDarkTheme
+                            ? "text-red-400 hover:text-red-300"
+                            : "text-red-600 hover:text-red-500"
+                        }`}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => toggleTodo(item?.id)}
+                        className={`h-8 w-8 cursor-pointer ${
+                          item.completed
+                            ? isDarkTheme
+                              ? "text-green-400 hover:text-green-300"
+                              : "text-green-600 hover:text-green-500"
+                            : isDarkTheme
+                            ? "text-slate-400 hover:text-slate-300"
+                            : "text-slate-600 hover:text-slate-500"
+                        }`}
+                      >
+                        {item?.completed ? (
+                          <CheckCircle className="h-4 w-4" />
+                        ) : (
+                          <Circle className="h-4 w-4" />
+                        )}
+                      </button>
+                      <p
+                        className={`flex-grow ${
+                          item.completed ? "line-through text-opacity-70" : ""
+                        }`}
+                      >
+                        {item?.text}
+                      </p>
+                    </div>
+                    <div className="">
+                      <p className="text-xs text-gray-500">
+                        {item.date.toLocaleString()}
+                      </p>
+                      <div className="flex items-center justify-end">
+                        <button
+                          onClick={() => startEditing(item)}
+                          className={`h-8 w-8 cursor-pointer flex items-center justify-center hover:bg-gray-200 rounded-[50%] ${
+                            isDarkTheme
+                              ? "text-blue-400 hover:text-blue-300"
+                              : "text-blue-600 hover:text-blue-500"
+                          }`}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => deleteTodo(item?.id)}
+                          className={`h-8 w-8 cursor-pointer flex items-center justify-center hover:bg-gray-200 rounded-[50%] ${
+                            isDarkTheme
+                              ? "text-red-400 hover:text-red-300"
+                              : "text-red-600 hover:text-red-500"
+                          }`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }
